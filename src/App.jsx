@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import Pet from "./Pet";
+
 import SearchParams from "./SearchParam";
 
 const App = () => {
