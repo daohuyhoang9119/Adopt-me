@@ -4,19 +4,30 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import SearchParams from "./SearchParam";
 import Detail from "./Detail";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: Infinity,
+            cacheTime: Infinity,
+        },
+    },
+});
+
 const App = () => {
     return (
         <BrowserRouter>
-            <div className="">
-                <header>
-                    <Link to="/">Adopt Me!</Link>
-                </header>
-
-                <Routes>
-                    <Route path="/detail/:id" element={<Detail />} />
-                    <Route path="/" element={<SearchParams />} />
-                </Routes>
-            </div>
+            <QueryClientProvider client={queryClient}>
+                <div className="">
+                    <header>
+                        <Link to="/">Adopt Me!</Link>
+                    </header>
+                    <Routes>
+                        <Route path="/detail/:id" element={<Detail />} />
+                        <Route path="/" element={<SearchParams />} />
+                    </Routes>
+                </div>
+            </QueryClientProvider>
         </BrowserRouter>
     );
 };

@@ -1,83 +1,74 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Results from "./Results";
 import useBreedList from "./useBreedList";
+import { useQuery } from "@tanstack/react-query";
+import fetchSearch from "./fetchSearch";
 
 const ANIMALS = ["dog", "cat", "bird", "rabbit", "reptile"];
 
 const SearchParams = () => {
-    const [location, setLocation] = useState("");
+    const [requestParams, setRequestParams] = useState({
+        location: "",
+        animal: "",
+        breed: "",
+    });
     const [animal, setAnimal] = useState("");
-    const [breed, setBreed] = useState("");
-
-    const [pets, setPets] = useState([]);
-
     const [breeds] = useBreedList(animal);
 
-    useEffect(() => {
-        requestPet();
-    }, []);
-
-    async function requestPet() {
-        let res = await fetch(
-            `http://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
-        );
-        const json = await res.json();
-        setPets(json.pets);
-    }
+    const results = useQuery(["search", requestParams], fetchSearch);
+    const pets = results?.data?.pets ?? [];
 
     return (
         <div className="search-params">
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
-                    requestPet();
+                    const formData = new FormData(e.target);
+                    const obj = {
+                        animal: formData.get("animal") ?? "",
+                        breed: formData.get("breed") ?? "",
+                        location: formData.get("location") ?? "",
+                    };
+                    setRequestParams(obj);
                 }}
             >
                 <label htmlFor="location">
                     Location
                     <input
-                        onChange={(e) => setLocation(e.target.value)}
                         id="location"
-                        value={location}
                         placeholder="Location"
+                        name="location"
                     />
                 </label>
                 <label htmlFor="animal">
                     Animal
                     <select
                         id="animal"
-                        value={animal}
+                        name="animal"
                         onChange={(e) => {
                             setAnimal(e.target.value);
-                            setBreed("");
                         }}
                         onBlur={(e) => {
                             setAnimal(e.target.value);
-                            setBreed("");
                         }}
                     >
                         <option />
                         {ANIMALS.map((animal) => (
-                            <option key={animal}>{animal}</option>
+                            <option key={animal} value={animal}>
+                                {animal}
+                            </option>
                         ))}
                     </select>
                 </label>
                 <label htmlFor="breed">
                     Breed
-                    <select
-                        id="breed"
-                        value={breed}
-                        onChange={(e) => {
-                            setBreed(e.target.value);
-                        }}
-                        onBlur={(e) => setBreed(e.target.value)}
-                        disabled={!breeds.length}
-                    >
+                    <select disabled={!breeds.length} id="breed" name="breed">
                         <option />
-                        {breeds &&
-                            breeds.map((breed) => (
-                                <option key={breed}>{breed}</option>
-                            ))}
+                        {breeds.map((breed) => (
+                            <option key={breed} value={breed}>
+                                {breed}
+                            </option>
+                        ))}
                     </select>
                 </label>
                 <button>Submit</button>
